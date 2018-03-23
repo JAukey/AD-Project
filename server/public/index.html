@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Take Picture !!!</title>
+    <script src="socket.io.js"></script>
+</head>
+
+<body>
+    <h1 style="font-size:5rem;margin:25rem auto 0 auto;text-align:center;">Take Picture !!!</h1>
+    <div align="center">
+        <button id="button" onClick="action()" style="font-size:4rem;text-align:center;margin-top:5rem">Take</button>
+    </div>
+    <script>
+        var socket = io.connect('http://192.168.40.45:3000');
+
+        function action() {
+            document.getElementById('button').disabled = true;
+            socket.emit('action', {
+                action: 1,
+                uid: 10000,
+                num: 1
+            });
+        }
+        socket.on('complete', function(data) {
+            if (data.success != undefined && data.success == 1) {
+                alert("拍照成功!");
+                document.getElementById('button').disabled = false;
+            } else {
+                alert("拍照失败，请重新拍摄!");
+                document.getElementById('button').disabled = false;
+            }
+        })
+    </script>
+
+</body>
+
+</html>;
