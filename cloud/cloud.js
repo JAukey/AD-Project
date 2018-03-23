@@ -1,8 +1,8 @@
 var fs = require('fs')
 var multer = require('multer')
 var express = require('express')
-var app = express();
-
+var path = require('path')
+var app = express()
 var createFolder = (folder) => {
     try {
         fs.accessSync(folder);
