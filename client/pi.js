@@ -10,7 +10,7 @@ socket.on('takePicture', (data) => {
         exec('bash take-photo.sh', (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
-                socket.emit('upload', { success: 0 });
+                socket.emit('done', { success: 0 });
                 return;
             }
             name = uid + '-' + num;
@@ -20,13 +20,13 @@ socket.on('takePicture', (data) => {
             request.post({ url: 'http://localhost:3000/upload', formData: formData },
                 (err, res, body) => {
                     if (err) {
-                        socket.emit('upload', { success: 0 })
+                        socket.emit('done', { success: 0 })
                         return console.error('upload failed:', err);
                     }
-                    if (body.success != undefined && body.success == 1) {
-                        socket.emit('upload', { success: 0 })
+                    if (JSON.parse(body).success != undefined && JSON.parse(body).success == 1) {
+                        socket.emit('done', { success: 1 })
                     } else {
-                        socket.emit('upload', { success: 1 })
+                        socket.emit('done', { success: 0 })
                     }
                 })
         })

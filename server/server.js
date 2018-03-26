@@ -31,6 +31,22 @@ var upload = multer({
     storage: storage
 })
 
+syn_post = function(url, form_data) {
+    return new Promise((resolve, reject) => {
+        request.post({ url: url, formData: form_data }, (err, res, body) => {
+            if (err) {
+                resolve(0);
+                return console.error('upload failed:', err);
+            }
+            if (JSON.parse(body).success != undefined && JSON.parse(body).success == 1) {
+                resolve(1);
+            } else {
+                resolve(0);
+            }
+        })
+    })
+};
+
 app.use(express.static(path.join(__dirname, 'public')))
 app.post('/upload', upload.any(), (req, res, next) => {
     gm(__dirname + '/upload/' + req.files[0].fieldname + '.jpg')
@@ -40,10 +56,18 @@ app.post('/upload', upload.any(), (req, res, next) => {
         .write(__dirname + '/public/photoMini/' + req.files[0].fieldname + '-mini.jpg', (err) => {
             if (!err) { console.log('done') };
         });
-    res.send({
-        success: 1
-    });
+    var formData = {
+        [req.files[0].fieldname]: fs.createReadStream(__dirname + '/public/photoMini/' + req.files[0].fieldname + '-mini.jpg')
+    }
+    fn = async function() {
+        var res_success = await syn_post('http://localhost:4000/upload', formData);
+        console.log(res_success);
+        res.json({
+            success: res_success
+        });
+    }();
 });
+
 io.on('connection', (socket) => {
     socket.on('action', (data) => {
         if (data.action != undefined && data.action == 1) {
@@ -54,7 +78,7 @@ io.on('connection', (socket) => {
             })
         }
     })
-    socket.on('upload', (data) => {
+    socket.on('done', (data) => {
         if (data.success != undefined && data.success == 1) {
             socket.broadcast.emit('complete', { success: 1 })
         } else {
